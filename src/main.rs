@@ -15,5 +15,5 @@ fn main() {
     f.read_to_string(&mut contents)
         .expect("something went wrong reading the file");
 
-    println!("contents are,\n{}", contents)
+    println!("contents are,\n{}", contents);
 }
