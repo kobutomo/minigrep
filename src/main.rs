@@ -16,4 +16,5 @@ fn main() {
         .expect("something went wrong reading the file");
 
     println!("contents are,\n{}", contents);
+    println!("now I'm in master");
 }
