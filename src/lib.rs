@@ -1,6 +1,6 @@
-use std::fs::File;
-use std::io::prelude::*;
 use std::{env, error::Error};
+use std::{env::Args, fs::File};
+use std::{io::prelude::*, iter::Skip};
 
 pub struct Config {
     pub query: String,
@@ -9,12 +9,16 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-        let query = args[1].clone();
-        let filename = args[2].clone();
+    pub fn new(mut args: Skip<Args>) -> Result<Config, &'static str> {
+        let query = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a query string"),
+        };
+
+        let filename = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Didn't get a filename"),
+        };
 
         let case_sensitive = env::var("CASE_INSENSITIVE").is_err();
 
@@ -46,24 +50,17 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 }
 
 fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let mut vec = Vec::new();
-    for line in contents.lines() {
-        if line.contains(query) {
-            vec.push(line);
-        }
-    }
-    vec
+    contents
+        .lines()
+        .filter(|line| line.contains(query))
+        .collect::<Vec<&'a str>>()
 }
 
 fn search_case_insensitive<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
-    let query = query.to_lowercase();
-    let mut vec = Vec::new();
-    for line in contents.lines() {
-        if line.to_lowercase().contains(&query) {
-            vec.push(line);
-        }
-    }
-    vec
+    contents
+        .lines()
+        .filter(|line| line.to_lowercase().contains(&query.to_lowercase()))
+        .collect::<Vec<&'a str>>()
 }
 
 #[cfg(test)]
